@@ -5,12 +5,17 @@ import com.sit.bloggin.entities.Post;
 import com.sit.bloggin.entities.User;
 import com.sit.bloggin.exception.ResourceNotFoundException;
 import com.sit.bloggin.payloads.PostDTO;
+import com.sit.bloggin.payloads.PostResponse;
 import com.sit.bloggin.repositories.CategoryRepo;
 import com.sit.bloggin.repositories.PostRepo;
 import com.sit.bloggin.repositories.UserRepo;
 import com.sit.bloggin.services.PostService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -62,9 +67,21 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDTO> getAllPost() {
-        List<Post> posts= this.postRepo.findAll();
-        return posts.stream().map((post)-> this.modelMapper.map(post, PostDTO.class)).collect(Collectors.toList());
+    public PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy) {
+
+        Pageable p = PageRequest.of(pageNumber, pageSize, Sort.by(sortBy));
+        Page<Post> pagePost = this.postRepo.findAll(p);
+        List<Post> posts = pagePost.getContent();
+
+        List<PostDTO> postDTOS = posts.stream().map((post)-> this.modelMapper.map(post, PostDTO.class)).collect(Collectors.toList());
+        PostResponse postResponse = new PostResponse();
+        postResponse.setContent(postDTOS);
+        postResponse.setPageNumber(pagePost.getNumber());
+        postResponse.setPageSize(pagePost.getSize());
+        postResponse.setTotalElements(pagePost.getTotalElements());
+        postResponse.setTotalpages(pagePost.getTotalPages());
+        postResponse.setLastpage(pagePost.isLast());
+        return postResponse;
 
     }
 
@@ -92,6 +109,8 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDTO> searchPosts(String keyword) {
-        return List.of();
+        List<Post> byTitleContaining = this.postRepo.findByTitleContaining(keyword);
+        List<PostDTO> postDTOS = byTitleContaining.stream().map((post)-> this.modelMapper.map(post, PostDTO.class)).collect(Collectors.toList());
+        return postDTOS;
     }
 }

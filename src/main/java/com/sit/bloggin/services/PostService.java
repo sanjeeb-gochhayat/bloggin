@@ -1,6 +1,7 @@
 package com.sit.bloggin.services;
 
 import com.sit.bloggin.payloads.PostDTO;
+import com.sit.bloggin.payloads.PostResponse;
 
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface PostService {
     //delete
     void deletePost(Integer postId);
     //getAllPost
-    List<PostDTO> getAllPost();
+    PostResponse getAllPost(Integer pageNumber, Integer pageSize, String sortBy);
     //get single post
     PostDTO getPostById(Integer postId);
     //get all post by category

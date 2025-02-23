@@ -1,7 +1,9 @@
 package com.sit.bloggin.controller;
 
+import com.sit.bloggin.config.AppConfig;
 import com.sit.bloggin.payloads.ApiResponse;
 import com.sit.bloggin.payloads.PostDTO;
+import com.sit.bloggin.payloads.PostResponse;
 import com.sit.bloggin.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,9 +38,12 @@ public class PostController {
     }
 
     @GetMapping("/posts")
-    public ResponseEntity<List<PostDTO>> getAllPost(){
-        List<PostDTO> posts = this.postService.getAllPost();
-        return ResponseEntity.ok(posts);
+    public ResponseEntity<PostResponse> getAllPost(@RequestParam(value = "pageNumber", defaultValue = AppConfig.PAGE_NUMBER, required = false) Integer pageNumber,
+                                                   @RequestParam(value = "pageSize", defaultValue = AppConfig.PAGE_SIZE, required = false) Integer pageSize,
+                                                   @RequestParam(value = "sortBy", defaultValue = AppConfig.SORT_BY, required = false) String sortBy
+                                                    ){
+        PostResponse postResponse = this.postService.getAllPost(pageNumber, pageSize, sortBy);
+        return ResponseEntity.ok(postResponse);
     }
 
     @GetMapping("/post/{postId}/posts")
@@ -57,5 +62,11 @@ public class PostController {
     public ResponseEntity<PostDTO> updatePost(@RequestBody PostDTO postDTO, @PathVariable Integer postId){
         PostDTO postDTO1 = this.postService.updatePost(postDTO, postId);
         return ResponseEntity.ok(postDTO1);
+    }
+
+    @GetMapping("/posts/search/{keyword}")
+    public ResponseEntity<List<PostDTO>> searchPostByTitle(@PathVariable("keyword") String keyword){
+        List<PostDTO> result = this.postService.searchPosts(keyword);
+        return ResponseEntity.ok(result);
     }
 }
